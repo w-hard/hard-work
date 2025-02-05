@@ -1,0 +1,81 @@
+Пример использования mixin-ов в Java.
+В Java примеси реализованы в виде default методов в интерфейсах.
+Допустим у нас иерархия спортсменов различного уровня.
+У спортсмена есть методы, где реализована логика занятия спортом.
+
+public abstract class Athlete { //Спортсмен.
+    public abstract void doSport();
+}
+
+public class Novice extends Athlete { //Спортсмен-новичок.
+    public void doSport() {
+        //do sport like Novice athlete
+    }
+}
+
+public class Elite extends Athlete { //Спортсмен среднего класса.
+    public void doSport() {
+        //do sport like Elite athlete
+    }
+ }
+
+ public class Pro extends Athlete { //Спортсмен-профи.
+     public void doSport() {
+         //do sport like Professional athlete
+     }
+ }
+
+У нас поступило требование, чтобы каждый спортсмен сдавал норматив по отжиманиям и подтягиваниям.
+Чтобы не добавлять эту логику в классы иерархии, можно создать интерфейсы PullupSkill, PushupSkill.
+И дефолтные методы для спортсмена каждого уровня.
+
+public interface PullupSkill {
+    default void novicePullup() { System.out.println("Сделать 10*3 подтягиваний."); }
+
+    default void elitePullup() { System.out.println("Сделать 20*3 подтягиваний."); }
+
+    default void proPullup() { System.out.println("Сделать 30*3 подтягиваний."); }
+}
+
+public interface PushupSkill {
+    default void novicePushup() { System.out.println("Сделать 10*3 отжиманий."); }
+
+    default void elitePushup() { System.out.println("Сделать 20*3 отжиманий."); }
+
+    default void proPushup() { System.out.println("Сделать 30*3 отжиманий."); }
+
+}
+
+Объявляем, что Athlete реализовывает интерфейсы PullupSkill, PushupSkill.
+И добавляем абстрактный метод fitTest().
+Для каждого потомка в методе fitTest вызываем соответствующие дефолтные методы интерфейсов.
+
+public abstract class Athlete implements PullupSkill, PushupSkill {
+    ...
+    public abstract void fitTest();
+}
+
+public class Novice extends Athlete {
+    ...
+    public void fitTest() {
+        novicePullup();
+        novicePushup();
+    }
+
+public class Elite extends Athlete {
+    ...
+    public void fitTest() {
+        elitePullup();
+        elitePushup();
+    }
+ }
+
+ public class Pro extends Athlete {
+    ...
+     public void fitTest() {
+         proPullup();
+         proPushup();
+ }
+
+ В методах интерфейса можно менять логику, не внося изменения в классы иерархии.
+ Например, если по новому стандарту новичку надо делать не 10 подтягиваний в подходе, а 12.
