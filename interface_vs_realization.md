@@ -116,5 +116,49 @@ public enum MessageSourceMask {
 }
 ```
 
-3. Пример, когда интерфейс точно не должен быть меньше реализации.
+
+3. Когда интерфейс точно не должен быть меньше реализации.
+
+В данном методе рассчитывается сумма дохода в зависимости от значения процентной ставки и даты начисления дохода. 
+
+``` java
+public BigDecimal calculateIncome(BigDecimal rate, LocalDate rateStartDate, LocalDate rateEndDate, LocalDate periodStart) {
+        boolean containFirstDayOfPeriod = rateStartDate.equals(periodStart);
+        long daysBetween = ChronoUnits.DAYS.between(rateStartDate, rateEndDate);
+        long daysForCalc = hasFirstDayOfPeriod ? daysBetween - 1 + curve : daysBetween;
+        BigDecimal rateWithSpread = rate.add(spread);
+
+        return nominal.multiply(rateWithSpread).multiply(BigDecimal.valueOf(daysForCalc)).divide(BigDecimal.valueOf(365));
+    }
+```
+Можно выделить новый тип InterestRate, который будет содержать период действия ставки и значение ставки.
+Спецификация получается больше, чем реализация. 
+
+```java
+
+public class Rate {
+        private Period period;
+        private BigDecimal value;
+
+        public Long getPeriodLenght() {
+            return period.getLength();
+        }
+}
+   /**
+    * Сумма дохода рассчитывается по формуле:
+    * Сумма = номинал * ("значение ставки" + спред) * "количество дней в расчетном периоде" / 365
+    * Количество дней в расчетном периоде рассчитывается по формуле:
+    * Дни = конец действия ставки - начало расчетного периода + срок кривой доходности
+    * Срок кривой доходности равен curve, если дата начала действия ставки приходится на первый день расчетного периода, в противном случае равен 0
+    */
+   public BigDecimal calculateIncome(InterestRate rate, LocalDate billingPeriodStart) {
+      long periodLength = rate.getPeriodLenght();
+      long daysForCalc = rate.getPeriod().isStartOfPeriod(billingPeriodStart) ? periodLength - 1 + curve : periodLength;
+      BigDecimal rateWithSpread = rate.getValue().add(spread);
+
+      return nominal.multiply(rateWithSpread).multiply(BigDecimal.valueOf(daysForCalc)).divide(BigDecimal.valueOf(365));
+   }
+```
+
+
 
